@@ -5,17 +5,6 @@
 
 Проект представляет собой площадку для размещения онлайн-курсов с набором уроков. Доступ к урокам предоставляется после покупки курса (подписки). Внутри курса студенты автоматически распределяются по группам.
 
-Перед тем, как приступить к выполнению задания, советуем изучить документацию, которая поможет в выполнении заданий:
-
-1. https://docs.djangoproject.com/en/4.2/intro/tutorial01/
-2. https://docs.djangoproject.com/en/4.2/topics/db/models/
-3. https://docs.djangoproject.com/en/4.2/topics/db/queries/
-4. https://docs.djangoproject.com/en/4.2/ref/models/querysets/
-5. https://docs.djangoproject.com/en/4.2/topics/signals/
-6. https://www.django-rest-framework.org/tutorial/quickstart/
-7. https://www.django-rest-framework.org/api-guide/viewsets/
-8. https://www.django-rest-framework.org/api-guide/serializers/
-
 # Построение системы для обучения
 
 Суть задания заключается в проверке знаний построения связей в БД и умении правильно строить запросы без ошибок N+1.
