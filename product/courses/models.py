@@ -15,12 +15,30 @@ class Course(models.Model):
     start_date = models.DateTimeField(
         auto_now=False,
         auto_now_add=False,
-        verbose_name='Дата и время начала курса'
+        verbose_name='Дата и время начала курса',
     )
-
-    # TODO
+    # NEW start
+    price = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        verbose_name='Цена',
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Дата обновления'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        editable=False,
+        verbose_name='Дата создания'
+    )
+    is_available = models.BooleanField(
+        default=True
+    )
+    # NEW end
 
     class Meta:
+        db_table = 'courses'  # NEW
         verbose_name = 'Курс'
         verbose_name_plural = 'Курсы'
         ordering = ('-id',)
@@ -40,10 +58,26 @@ class Lesson(models.Model):
         max_length=250,
         verbose_name='Ссылка',
     )
-
-    # TODO
+    # NEW start
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        verbose_name='ID Курса',
+        related_name='lessons'
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Дата обновления'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        editable=False,
+        verbose_name='Дата создания'
+    )
+    # NEW end
 
     class Meta:
+        db_table = 'lessons'  # NEW
         verbose_name = 'Урок'
         verbose_name_plural = 'Уроки'
         ordering = ('id',)
@@ -58,6 +92,7 @@ class Group(models.Model):
     # TODO
 
     class Meta:
+        db_table = 'groups'  # NEW
         verbose_name = 'Группа'
         verbose_name_plural = 'Группы'
         ordering = ('-id',)

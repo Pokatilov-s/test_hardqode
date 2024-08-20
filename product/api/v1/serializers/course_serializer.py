@@ -122,3 +122,26 @@ class CreateCourseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Course
+        fields = '__all__'
+
+
+# NEW start
+class ListAvailableCourseSerializer(serializers.ModelSerializer):
+    """Список доступных курсов"""
+
+    lessons_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Course
+        fields = (
+            'id',
+            'author',
+            'title',
+            'start_date',
+            'price',
+            'lessons_count'
+        )
+
+    def get_lessons_count(self, obj):
+        return obj.lesson_count
+# NEW end

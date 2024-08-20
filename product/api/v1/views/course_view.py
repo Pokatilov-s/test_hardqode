@@ -1,3 +1,5 @@
+from django.db.models import Count
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets, permissions
 from rest_framework.decorators import action
@@ -9,10 +11,11 @@ from api.v1.serializers.course_serializer import (CourseSerializer,
                                                   CreateGroupSerializer,
                                                   CreateLessonSerializer,
                                                   GroupSerializer,
-                                                  LessonSerializer)
+                                                  LessonSerializer,
+                                                  ListAvailableCourseSerializer)  # NEW
 from api.v1.serializers.user_serializer import SubscriptionSerializer
 from courses.models import Course
-from users.models import Subscription
+from users.models import Subscription, Balance
 
 
 class LessonViewSet(viewsets.ModelViewSet):
@@ -72,9 +75,79 @@ class CourseViewSet(viewsets.ModelViewSet):
     def pay(self, request, pk):
         """Покупка доступа к курсу (подписка на курс)."""
 
-        # TODO
+# NEW start
+        user = request.user
+        user_balance = get_object_or_404(Balance, user_id=user.id)
+
+        try:
+            course = Course.objects.only('id', 'price').get(id=pk)
+        except Course.DoesNotExist:
+            raise Http404("Курс не найден")
+
+        if user_balance.amount >= course.price:
+            if not Subscription.objects.filter(user_id=user.id, course_id=course.id).exists():
+
+                user_balance.amount -= course.price
+                user_balance.save()
+
+                serializer = SubscriptionSerializer(
+                    data={
+                        'user': user.id,
+                        'course': course.id
+                    }
+                )
+
+                serializer.save()
+
+                return Response(
+                    data='Подписка на курс приобретена ',
+                    status=status.HTTP_201_CREATED
+                )
+
+            return Response(
+                data='Пользователь уже подписан на курс',
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         return Response(
-            data=data,
-            status=status.HTTP_201_CREATED
+            data='Не достаточно бонусов на балансе',
+            status=status.HTTP_400_BAD_REQUEST
         )
+
+    @action(
+        methods=['get'],
+        detail=False,
+        permission_classes=(permissions.IsAuthenticated,),
+        serializer_class=ListAvailableCourseSerializer,
+        url_path='available'
+    )
+    def list_courses_available_to_buy(self, request):
+        """Получить список доступных для покупки курсов"""
+        user_subscriptions = Subscription.objects.filter(
+            user=request.user
+        ).values_list(
+            'course_id',
+            flat=True
+        )
+
+        courses = Course.objects.only(
+            'id',
+            'author',
+            'title',
+            'start_date',
+            'price'
+        ).filter(
+            is_available=True
+        ).exclude(
+            id__in=user_subscriptions
+        ).annotate(
+            lesson_count=Count('lessons')
+        )
+        serializer = ListAvailableCourseSerializer(courses, many=True)
+
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_200_OK
+        )
+
+# NEW end
